@@ -1,0 +1,15 @@
+'use strict';
+
+const { createServer } = require('vite');
+
+module.exports = () => {
+  return async (ctx, next) => {
+    const { app } = ctx;
+
+    if (!app.viteServer) {
+      app.viteServer = await (await createServer({})).listen();
+    }
+
+    await next();
+  };
+};
