@@ -3,62 +3,51 @@
 const cheerio = require('cheerio');
 const path = require('path');
 
-const VITE = Symbol('Context#vite');
-
-class ViteContext {
-  constructor(ctx) {
-    this.ctx = ctx;
-    this.viteServer = this.ctx.app.viteServer;
-  }
-
-  async render(name, data) {
-    if (this.viteServer) {
-      const address = this.getServerAddress();
-      const html = (
-        await this.ctx.curl(`${this.ctx.protocol}://${address}/${name}`)
-      ).data.toString();
-
-      const $ = cheerio.load(html, {});
-
-      $('script').each((_idx, elm) => {
-        const child = $(elm);
-        const src = child.attr('src');
-        if (
-          src &&
-          !src.startsWith('http:') &&
-          !src.startsWith('https:') &&
-          !src.startsWith('//')
-        ) {
-          child.attr('src', `//${path.join(address, src)}`);
-        }
-      });
-
-      this.ctx.body = await this.ctx.renderString($.html({}), data);
-    } else {
-      await this.ctx.render(name, data);
-    }
-  }
-
-  getServerAddress() {
-    const address = this.viteServer.httpServer?.address();
-    if (typeof address === 'string') {
-      return address;
-    }
-
-    return `${address?.address === '::' ? '0.0.0.0' : address?.address}:${
-      address?.port
-    }`;
-  }
-}
-
 module.exports = {
   get vite() {
-    if (this[VITE]) {
-      return this[VITE];
-    }
+    const getServerAddress = (server) => {
+      const address = server.httpServer.address();
 
-    this[VITE] = new ViteContext(this);
+      if (typeof address === 'string') {
+        return address;
+      }
 
-    return this[VITE];
+      const ip = (address && address.address) || '0.0.0.0';
+
+      const port = (address && address.port) || 3000;
+
+      return `${ip === '::' ? '0.0.0.0' : ip}:${port}`;
+    };
+
+    return {
+      render: async (name, data) => {
+        if (this.app.viteServer) {
+          const address = getServerAddress(this.app.viteServer);
+
+          const html = (
+            await this.curl(`${this.protocol}://${path.join(address, name)}`)
+          ).data.toString();
+
+          const $ = cheerio.load(html, {});
+
+          $('script').each((_idx, elm) => {
+            const child = $(elm);
+            const src = child.attr('src');
+            if (
+              src &&
+              !src.startsWith('http:') &&
+              !src.startsWith('https:') &&
+              !src.startsWith('//')
+            ) {
+              child.attr('src', `//${path.join(address, src)}`);
+            }
+          });
+
+          this.body = await this.renderString($.html({}), data);
+        } else {
+          return await this.render(name, data);
+        }
+      },
+    };
   },
 };

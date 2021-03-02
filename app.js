@@ -3,7 +3,7 @@
 const vite = require('./app/middleware/vite');
 
 module.exports = (app) => {
-  if (app.config.vite && app.config.vite.devServer) {
+  if (app.config.vitePlugin && app.config.vitePlugin.devServer) {
     app.use(vite);
   }
 };

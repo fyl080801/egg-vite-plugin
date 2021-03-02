@@ -2,14 +2,12 @@
 
 const { createServer } = require('vite');
 
-module.exports = () => {
-  return async (ctx, next) => {
-    const { app } = ctx;
+module.exports = async (ctx, next) => {
+  const { app } = ctx;
 
-    if (!app.viteServer) {
-      app.viteServer = await (await createServer({})).listen();
-    }
+  if (!app.viteServer) {
+    app.viteServer = await (await createServer({})).listen();
+  }
 
-    await next();
-  };
+  await next();
 };
