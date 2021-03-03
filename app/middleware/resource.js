@@ -7,7 +7,7 @@ const { getServerAddress, isRegexp } = require('../../utils/helper');
 
 module.exports = async (ctx, next) => {
   const { app, path, protocol } = ctx;
-  const { targets } = app.config.vitePlugin;
+  const { targets = [] } = app.config.vitePlugin;
 
   for (const target of targets) {
     if ((isRegexp(target) ? target : pathToRegexp(target)).test(path)) {
