@@ -3,7 +3,7 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const k2Connect = require('koa2-connect');
 const { pathToRegexp } = require('path-to-regexp');
-const { getServerAddress, isRegexp } = require('../../utils/helper');
+const { getServerAddress, isRegexp } = require('../utils/helper');
 
 module.exports = async (ctx, next) => {
   const { app, path, protocol } = ctx;

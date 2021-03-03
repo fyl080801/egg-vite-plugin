@@ -2,7 +2,7 @@
 
 const cheerio = require('cheerio');
 const path = require('path');
-const { getServerAddress } = require('../../utils/helper');
+const { getServerAddress } = require('../utils/helper');
 
 module.exports = {
   get vite() {
